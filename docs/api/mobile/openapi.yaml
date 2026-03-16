@@ -1,0 +1,1568 @@
+openapi: 3.0.3
+info:
+  title: CandyFandy Mobile API
+  description: |
+    REST API for the CandyFandy mobile application.
+
+    ## Authentication
+    Protected endpoints require a Bearer token in the `Authorization` header:
+    ```
+    Authorization: Bearer <your_token>
+    ```
+    Tokens are obtained via the **Login** or **Register** endpoints and expire after **30 days**.
+
+  version: "1.0.0"
+  contact:
+    name: CandyFandy Backend
+
+servers:
+  - url: https://candyfandy.com/dev/upload/index.php
+    description: Production server
+  - url: http://candyfandy.test/index.php
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Login, register, logout
+  - name: Products
+    description: Browse and view products
+  - name: Categories
+    description: Product categories
+  - name: Search
+    description: Search products
+  - name: Account
+    description: Customer profile and addresses
+  - name: Cart
+    description: Shopping cart management
+  - name: Orders
+    description: Order history
+  - name: Wishlist
+    description: Customer wishlist
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: HEX64
+      description: 64-character hex token returned from login/register
+
+  schemas:
+
+    # ── Generic ─────────────────────────────────────────────────────────────
+
+    SuccessMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Action completed successfully
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: Human readable error message
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            email: Email is already registered
+            password: Password must be between 4 and 40 characters
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 85
+        total_pages:
+          type: integer
+          example: 5
+
+    # ── Auth ────────────────────────────────────────────────────────────────
+
+    CustomerSummary:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+          example: 5
+        firstname:
+          type: string
+          example: John
+        lastname:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        telephone:
+          type: string
+          example: "+1234567890"
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        token:
+          type: string
+          example: a3f8c2e1d4b7f9a0c3e6d8b1f2a4c7e9d0b3f5a8c1e4d7b0f2a5c8e1d4b7f0a2
+        customer:
+          $ref: '#/components/schemas/CustomerSummary'
+
+    # ── Products ────────────────────────────────────────────────────────────
+
+    ProductListItem:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Haribo Gold Bears
+        model:
+          type: string
+          example: HRB-001
+        sku:
+          type: string
+          example: SKU-HRB-001
+        image:
+          type: string
+          format: uri
+          example: https://candyfandy.com/dev/upload/image/catalog/products/haribo.jpg
+        price:
+          type: number
+          format: float
+          example: 2.99
+        special:
+          type: number
+          format: float
+          nullable: true
+          example: 1.99
+        tax_class_id:
+          type: integer
+          example: 9
+        quantity:
+          type: integer
+          example: 150
+        rating:
+          type: integer
+          example: 4
+        reviews:
+          type: integer
+          example: 23
+        manufacturer:
+          type: string
+          example: Haribo
+        date_available:
+          type: string
+          example: "2024-01-01"
+
+    ProductOptionValue:
+      type: object
+      properties:
+        product_option_value_id:
+          type: integer
+          example: 34
+        name:
+          type: string
+          example: 200g
+        image:
+          type: string
+          format: uri
+          example: ""
+        price:
+          type: number
+          example: 0.00
+        price_prefix:
+          type: string
+          example: "+"
+        quantity:
+          type: integer
+          example: 100
+
+    ProductOption:
+      type: object
+      properties:
+        product_option_id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Size
+        type:
+          type: string
+          example: select
+          enum: [select, radio, checkbox, text, textarea, file, date, time, datetime]
+        required:
+          type: boolean
+          example: true
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOptionValue'
+
+    ProductReview:
+      type: object
+      properties:
+        author:
+          type: string
+          example: Jane S.
+        rating:
+          type: integer
+          example: 5
+        text:
+          type: string
+          example: Absolutely love these!
+        date_added:
+          type: string
+          example: "2024-03-10"
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductListItem'
+        - type: object
+          properties:
+            description:
+              type: string
+              example: "<p>Classic Haribo Gold Bears in a 200g bag...</p>"
+            minimum:
+              type: integer
+              example: 1
+            weight:
+              type: string
+              example: "0.20"
+            weight_class:
+              type: string
+              example: kg
+            length:
+              type: string
+              example: "10.00"
+            width:
+              type: string
+              example: "5.00"
+            height:
+              type: string
+              example: "3.00"
+            length_class:
+              type: string
+              example: cm
+            images:
+              type: array
+              items:
+                type: string
+                format: uri
+            options:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductOption'
+            reviews:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductReview'
+            related:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductListItem'
+
+    # ── Categories ──────────────────────────────────────────────────────────
+
+    Category:
+      type: object
+      properties:
+        category_id:
+          type: integer
+          example: 20
+        parent_id:
+          type: integer
+          example: 0
+        name:
+          type: string
+          example: Gummy Candy
+        description:
+          type: string
+          example: All types of gummy and jelly candy
+        image:
+          type: string
+          format: uri
+          example: https://candyfandy.com/dev/upload/image/catalog/categories/gummy.jpg
+        sort_order:
+          type: integer
+          example: 1
+
+    CategoryDetail:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          properties:
+            children:
+              type: array
+              items:
+                type: object
+                properties:
+                  category_id:
+                    type: integer
+                  name:
+                    type: string
+                  image:
+                    type: string
+                    format: uri
+
+    # ── Account ─────────────────────────────────────────────────────────────
+
+    CustomerProfile:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+          example: 5
+        firstname:
+          type: string
+          example: John
+        lastname:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        telephone:
+          type: string
+          example: "1234567890"
+        newsletter:
+          type: boolean
+          example: false
+        customer_group_id:
+          type: integer
+          example: 1
+        date_added:
+          type: string
+          example: "2024-01-15 10:30:00"
+
+    Address:
+      type: object
+      properties:
+        address_id:
+          type: integer
+          example: 3
+        firstname:
+          type: string
+          example: John
+        lastname:
+          type: string
+          example: Doe
+        company:
+          type: string
+          example: ""
+        address_1:
+          type: string
+          example: 123 Candy Lane
+        address_2:
+          type: string
+          example: Apt 4B
+        city:
+          type: string
+          example: New York
+        postcode:
+          type: string
+          example: "10001"
+        zone:
+          type: string
+          example: New York
+        zone_id:
+          type: integer
+          example: 3635
+        country:
+          type: string
+          example: United States
+        country_id:
+          type: integer
+          example: 223
+        default:
+          type: boolean
+          example: true
+
+    # ── Cart ────────────────────────────────────────────────────────────────
+
+    CartItem:
+      type: object
+      properties:
+        cart_id:
+          type: integer
+          example: 14
+        product_id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Haribo Gold Bears
+        model:
+          type: string
+          example: HRB-001
+        image:
+          type: string
+          format: uri
+          example: https://candyfandy.com/dev/upload/image/catalog/products/haribo.jpg
+        quantity:
+          type: integer
+          example: 2
+        price:
+          type: number
+          example: 2.99
+        total:
+          type: number
+          example: 5.98
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Size
+              value:
+                type: string
+                example: 200g
+
+    CartTotal:
+      type: object
+      properties:
+        code:
+          type: string
+          example: sub_total
+        title:
+          type: string
+          example: Sub-Total
+        value:
+          type: number
+          example: 5.98
+
+    Cart:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totals:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartTotal'
+        total:
+          type: number
+          example: 10.98
+        item_count:
+          type: integer
+          example: 2
+        has_shipping:
+          type: boolean
+          example: true
+
+    # ── Orders ──────────────────────────────────────────────────────────────
+
+    OrderListItem:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 88
+        status:
+          type: string
+          example: Complete
+        date_added:
+          type: string
+          example: "2024-03-15 14:22:00"
+        total:
+          type: string
+          example: "10.98"
+        currency_code:
+          type: string
+          example: USD
+        products:
+          type: integer
+          example: 2
+
+    OrderProduct:
+      type: object
+      properties:
+        order_product_id:
+          type: integer
+          example: 55
+        product_id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Haribo Gold Bears
+        model:
+          type: string
+          example: HRB-001
+        quantity:
+          type: integer
+          example: 2
+        price:
+          type: number
+          example: 2.99
+        total:
+          type: number
+          example: 5.98
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+
+    OrderDetail:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 88
+        invoice_no:
+          type: string
+          example: INV-2024-0088
+        status:
+          type: string
+          example: Complete
+        date_added:
+          type: string
+          example: "2024-03-15 14:22:00"
+        payment_method:
+          type: string
+          example: Credit Card
+        shipping_method:
+          type: string
+          example: Flat Rate
+        payment_address:
+          type: object
+          properties:
+            firstname: { type: string }
+            lastname:  { type: string }
+            address_1: { type: string }
+            city:      { type: string }
+            country:   { type: string }
+        shipping_address:
+          type: object
+          properties:
+            firstname: { type: string }
+            lastname:  { type: string }
+            address_1: { type: string }
+            city:      { type: string }
+            country:   { type: string }
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderProduct'
+        totals:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartTotal'
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              status:     { type: string }
+              comment:    { type: string }
+              date_added: { type: string }
+        comment:
+          type: string
+        currency_code:
+          type: string
+          example: USD
+        currency_value:
+          type: number
+          example: 1.0
+
+    # ── Wishlist ─────────────────────────────────────────────────────────────
+
+    WishlistItem:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Haribo Gold Bears
+        model:
+          type: string
+          example: HRB-001
+        image:
+          type: string
+          format: uri
+        price:
+          type: number
+          example: 2.99
+        special:
+          type: number
+          nullable: true
+          example: 1.99
+        rating:
+          type: integer
+          example: 4
+
+# ════════════════════════════════════════════════════════════════════════════
+# PATHS
+# ════════════════════════════════════════════════════════════════════════════
+
+paths:
+
+  # ── Auth ──────────────────────────────────────────────────────────────────
+
+  /?route=mobile/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate customer and receive an access token.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: Invalid email or password
+
+  /?route=mobile/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register
+      description: Create a new customer account and receive an access token.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [firstname, lastname, email, password, confirm]
+              properties:
+                firstname:
+                  type: string
+                  example: John
+                lastname:
+                  type: string
+                  example: Doe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                telephone:
+                  type: string
+                  example: "1234567890"
+                password:
+                  type: string
+                  format: password
+                  minLength: 4
+                  maxLength: 40
+                  example: secret123
+                confirm:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    example: a3f8c2e1d4b7f9a0...
+                  customer_id:
+                    type: integer
+                    example: 12
+                  message:
+                    type: string
+                    example: Account created successfully
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /?route=mobile/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Invalidate the current access token.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+
+  # ── Products ──────────────────────────────────────────────────────────────
+
+  /?route=mobile/product:
+    get:
+      tags: [Products]
+      summary: List products
+      description: Returns a paginated list of products. No authentication required.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/product]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+          description: Filter by category
+        - name: manufacturer_id
+          in: query
+          schema:
+            type: integer
+          description: Filter by brand
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: p.date_added
+            enum: [p.name, p.price, p.date_added, p.sort_order, p.model]
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: DESC
+            enum: [ASC, DESC]
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /?route=mobile/product/info:
+    get:
+      tags: [Products]
+      summary: Product detail
+      description: Returns full product details including images, options, reviews and related products.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/product/info]
+        - name: product_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 101
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ProductDetail'
+        '400':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Categories ────────────────────────────────────────────────────────────
+
+  /?route=mobile/category:
+    get:
+      tags: [Categories]
+      summary: List categories
+      description: Returns categories. Use `parent_id=0` (default) for top-level categories.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/category]
+        - name: parent_id
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Parent category ID. 0 = top-level.
+      responses:
+        '200':
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+
+  /?route=mobile/category/info:
+    get:
+      tags: [Categories]
+      summary: Category detail
+      description: Returns a single category with its child categories.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/category/info]
+        - name: category_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 20
+      responses:
+        '200':
+          description: Category detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/CategoryDetail'
+        '400':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Search ────────────────────────────────────────────────────────────────
+
+  /?route=mobile/search:
+    get:
+      tags: [Search]
+      summary: Search products
+      description: Search products by keyword.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/search]
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          example: haribo
+          description: Search keyword
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+          description: Limit search to a specific category
+        - name: description
+          in: query
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+          description: Set to 1 to also search product descriptions
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  query:
+                    type: string
+                    example: haribo
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Missing query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Account ───────────────────────────────────────────────────────────────
+
+  /?route=mobile/account:
+    get:
+      tags: [Account]
+      summary: Get profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/CustomerProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/account/edit:
+    post:
+      tags: [Account]
+      summary: Edit profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [firstname, lastname]
+              properties:
+                firstname:
+                  type: string
+                  example: John
+                lastname:
+                  type: string
+                  example: Doe
+                telephone:
+                  type: string
+                  example: "1234567890"
+                newsletter:
+                  type: integer
+                  enum: [0, 1]
+                  example: 0
+                password:
+                  type: string
+                  format: password
+                  description: Leave empty to keep current password
+                confirm:
+                  type: string
+                  format: password
+                  description: Required if password is provided
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /?route=mobile/account/addresses:
+    get:
+      tags: [Account]
+      summary: Get addresses
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Address list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/account/address_add:
+    post:
+      tags: [Account]
+      summary: Add address
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [firstname, lastname, address_1, city, country_id]
+              properties:
+                firstname:
+                  type: string
+                  example: John
+                lastname:
+                  type: string
+                  example: Doe
+                company:
+                  type: string
+                  example: ""
+                address_1:
+                  type: string
+                  example: 123 Candy Lane
+                address_2:
+                  type: string
+                  example: Apt 4B
+                city:
+                  type: string
+                  example: New York
+                postcode:
+                  type: string
+                  example: "10001"
+                country_id:
+                  type: integer
+                  example: 223
+                zone_id:
+                  type: integer
+                  example: 3635
+                default:
+                  type: integer
+                  enum: [0, 1]
+                  example: 1
+      responses:
+        '200':
+          description: Address added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  address_id:
+                    type: integer
+                    example: 7
+                  message:
+                    type: string
+                    example: Address added
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  # ── Cart ──────────────────────────────────────────────────────────────────
+
+  /?route=mobile/cart:
+    get:
+      tags: [Cart]
+      summary: Get cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart contents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/cart/add:
+    post:
+      tags: [Cart]
+      summary: Add to cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [product_id]
+              properties:
+                product_id:
+                  type: integer
+                  example: 101
+                quantity:
+                  type: integer
+                  default: 1
+                  example: 2
+                option:
+                  type: object
+                  description: "Key-value pairs of option ID to option value ID. e.g. option[12]=34"
+                  additionalProperties:
+                    type: integer
+                  example:
+                    "12": 34
+      responses:
+        '200':
+          description: Added to cart — returns updated cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product added to cart
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation / stock error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/cart/update:
+    post:
+      tags: [Cart]
+      summary: Update cart item
+      description: Update quantity of a cart item. Send quantity=0 to remove it.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [cart_id, quantity]
+              properties:
+                cart_id:
+                  type: integer
+                  example: 14
+                quantity:
+                  type: integer
+                  example: 3
+                  description: Send 0 to remove the item
+      responses:
+        '200':
+          description: Cart updated — returns updated cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cart updated
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/cart/remove:
+    post:
+      tags: [Cart]
+      summary: Remove cart item
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [cart_id]
+              properties:
+                cart_id:
+                  type: integer
+                  example: 14
+      responses:
+        '200':
+          description: Item removed — returns updated cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Item removed from cart
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/cart/clear:
+    post:
+      tags: [Cart]
+      summary: Clear cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Orders ────────────────────────────────────────────────────────────────
+
+  /?route=mobile/order:
+    get:
+      tags: [Orders]
+      summary: List orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/order]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrderListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/order/info:
+    get:
+      tags: [Orders]
+      summary: Order detail
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/order/info]
+        - name: order_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 88
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/OrderDetail'
+        '400':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Wishlist ──────────────────────────────────────────────────────────────
+
+  /?route=mobile/wishlist:
+    get:
+      tags: [Wishlist]
+      summary: Get wishlist
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wishlist items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WishlistItem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/wishlist/add:
+    post:
+      tags: [Wishlist]
+      summary: Add to wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [product_id]
+              properties:
+                product_id:
+                  type: integer
+                  example: 101
+      responses:
+        '200':
+          description: Added to wishlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/wishlist/remove:
+    post:
+      tags: [Wishlist]
+      summary: Remove from wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [product_id]
+              properties:
+                product_id:
+                  type: integer
+                  example: 101
+      responses:
+        '200':
+          description: Removed from wishlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
