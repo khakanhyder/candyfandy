@@ -3,11 +3,11 @@
 define('APPLICATION', 'Admin');
 
 // HTTP
-define('HTTP_SERVER', 'http://candyfandy.test/admin/');
-define('HTTP_CATALOG', 'http://candyfandy.test/');
+define('HTTP_SERVER', 'https://candyfandy.com/candyfandy/admin/');
+define('HTTP_CATALOG', 'https://candyfandy.com/candyfandy/');
 
 // DIR
-define('DIR_OPENCART', 'C:/laragon/www/candyfandy/');
+define('DIR_OPENCART', '/home/candyfandy/public_html/candyfandy/');
 define('DIR_APPLICATION', DIR_OPENCART . 'admin/');
 define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
 define('DIR_IMAGE', DIR_OPENCART . 'image/');
@@ -26,9 +26,9 @@ define('DIR_UPLOAD', DIR_STORAGE . 'upload/');
 // DB
 define('DB_DRIVER', 'mysqli');
 define('DB_HOSTNAME', 'localhost');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '');
-define('DB_DATABASE', 'candyfandy');
+define('DB_USERNAME', 'candyfandy_opencart');
+define('DB_PASSWORD', 'Fireon5253');
+define('DB_DATABASE', 'candyfandy_opencart');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 
