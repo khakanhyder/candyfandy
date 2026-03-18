@@ -1,6 +1,6 @@
 # CandyFandy Mobile API Documentation
 
-**Base URL:** `https://candyfandy.com/dev/upload/index.php`
+**Base URL:** `https://candyfandy.com/dev/index.php`
 **API Version:** 1.0
 **Format:** All responses are JSON
 **Charset:** UTF-8

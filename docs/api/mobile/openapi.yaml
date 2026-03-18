@@ -16,7 +16,7 @@ info:
     name: CandyFandy Backend
 
 servers:
-  - url: https://candyfandy.com/dev/upload/index.php
+  - url: https://candyfandy.com/dev/index.php
     description: Production server
   - url: http://candyfandy.test/index.php
     description: Local development server
