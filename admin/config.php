@@ -3,11 +3,11 @@
 define('APPLICATION', 'Admin');
 
 // HTTP
-define('HTTP_SERVER', 'https://candyfandy.com/candyfandy/admin/');
-define('HTTP_CATALOG', 'https://candyfandy.com/candyfandy/');
+define('HTTP_SERVER', 'https://candyfandy.com/dev/admin/');
+define('HTTP_CATALOG', 'https://candyfandy.com/dev/');
 
 // DIR
-define('DIR_OPENCART', '/home/candyfandy/public_html/candyfandy/');
+define('DIR_OPENCART', '/home/candyfandy/public_html/dev/');
 define('DIR_APPLICATION', DIR_OPENCART . 'admin/');
 define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
 define('DIR_IMAGE', DIR_OPENCART . 'image/');
