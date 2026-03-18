@@ -132,9 +132,10 @@ class Auth extends \Opencart\System\Engine\Controller {
 		if ($customer_info && $customer_info['status']) {
 			$code = oc_token(40);
 			$this->model_account_customer->addToken((int)$customer_info['customer_id'], 'password', $code);
+			$this->sendPasswordResetEmail($customer_info, $code);
 		}
 
-		$this->json(['success' => true, 'message' => 'If an account with that email exists, a password reset link has been sent.']);
+		$this->json(['success' => true, 'message' => 'If an account with that email exists, a password reset email has been sent.']);
 	}
 
 	public function resetPassword(): void {
@@ -178,5 +179,44 @@ class Auth extends \Opencart\System\Engine\Controller {
 		$this->model_account_customer->deleteTokenByCode($code);
 
 		$this->json(['success' => true, 'message' => 'Password has been reset successfully']);
+	}
+
+	private function sendPasswordResetEmail(array $customer_info, string $code): void {
+		if (!$this->config->get('config_mail_engine')) {
+			return;
+		}
+
+		$store_name = html_entity_decode($this->config->get('config_name'), ENT_QUOTES, 'UTF-8');
+
+		$mail_option = [
+			'parameter'     => $this->config->get('config_mail_parameter'),
+			'smtp_hostname' => $this->config->get('config_mail_smtp_hostname'),
+			'smtp_username' => $this->config->get('config_mail_smtp_username'),
+			'smtp_password' => html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8'),
+			'smtp_port'     => $this->config->get('config_mail_smtp_port'),
+			'smtp_timeout'  => $this->config->get('config_mail_smtp_timeout'),
+		];
+
+		$firstname = html_entity_decode($customer_info['firstname'], ENT_QUOTES, 'UTF-8');
+
+		$subject = 'Password Reset Request - ' . $store_name;
+
+		$body  = 'Hello ' . $firstname . ',' . "\n\n";
+		$body .= 'We received a request to reset your password for your ' . $store_name . ' account.' . "\n\n";
+		$body .= 'Your password reset code is:' . "\n\n";
+		$body .= '    ' . $code . "\n\n";
+		$body .= 'Enter this code in the app to reset your password.' . "\n";
+		$body .= 'This code expires in 10 minutes.' . "\n\n";
+		$body .= 'If you did not request a password reset, please ignore this email.' . "\n\n";
+		$body .= 'Thanks,' . "\n";
+		$body .= $store_name;
+
+		$mail = new \Opencart\System\Library\Mail($this->config->get('config_mail_engine'), $mail_option);
+		$mail->setTo($customer_info['email']);
+		$mail->setFrom($this->config->get('config_email'));
+		$mail->setSender($store_name);
+		$mail->setSubject($subject);
+		$mail->setText($body);
+		$mail->send();
 	}
 }
