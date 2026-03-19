@@ -386,10 +386,11 @@ class Product extends \Opencart\System\Engine\Model {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function getBestSellers(array $data = []): array {
-		$sql = "SELECT DISTINCT `pb`.`total` AS `sold`, `pd`.`name`, `p`.`image`, `p`.`product_id`, `p`.`model`, `p`.`sku`, `p`.`price`, `p`.`tax_class_id`, `p`.`quantity`, `p`.`date_available`, `m`.`name` AS `manufacturer`, " . $this->statement['discount'] . ", " . $this->statement['special'] . ", " . $this->statement['reward'] . ", " . $this->statement['review'] . "
-			FROM `" . DB_PREFIX . "product_bestseller` `pb`
-			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `pb`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
-			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pb`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
+		$sql = "SELECT `p`.`product_id`, `pd`.`name`, `p`.`image`, `p`.`model`, `p`.`sku`, `p`.`price`, `p`.`tax_class_id`, `p`.`quantity`, `p`.`date_available`, `m`.`name` AS `manufacturer`, SUM(`op`.`quantity`) AS `sold`, " . $this->statement['discount'] . ", " . $this->statement['special'] . ", " . $this->statement['reward'] . ", " . $this->statement['review'] . "
+			FROM `" . DB_PREFIX . "order_product` `op`
+			INNER JOIN `" . DB_PREFIX . "order` `o` ON (`o`.`order_id` = `op`.`order_id` AND `o`.`order_status_id` > 0)
+			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `op`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
+			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `op`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
 			LEFT JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "')
 			LEFT JOIN `" . DB_PREFIX . "manufacturer` `m` ON (`m`.`manufacturer_id` = `p`.`manufacturer_id`)";
 
@@ -399,7 +400,7 @@ class Product extends \Opencart\System\Engine\Model {
 
 		$sql .= " WHERE `pd`.`product_id` IS NOT NULL";
 
-		$sql .= " ORDER BY `pb`.`total` DESC";
+		$sql .= " GROUP BY `p`.`product_id` ORDER BY `sold` DESC";
 
 		if (isset($data['start'], $data['limit'])) {
 			$sql .= " LIMIT " . max(0, (int)$data['start']) . "," . max(1, (int)$data['limit']);
@@ -418,10 +419,11 @@ class Product extends \Opencart\System\Engine\Model {
 	 * @return int
 	 */
 	public function getTotalBestSellers(array $data = []): int {
-		$sql = "SELECT COUNT(DISTINCT `pb`.`product_id`) AS `total`
-			FROM `" . DB_PREFIX . "product_bestseller` `pb`
-			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `pb`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
-			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pb`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
+		$sql = "SELECT COUNT(DISTINCT `op`.`product_id`) AS `total`
+			FROM `" . DB_PREFIX . "order_product` `op`
+			INNER JOIN `" . DB_PREFIX . "order` `o` ON (`o`.`order_id` = `op`.`order_id` AND `o`.`order_status_id` > 0)
+			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `op`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
+			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `op`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
 			LEFT JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "')";
 
 		if (!empty($data['filter_category_id'])) {
