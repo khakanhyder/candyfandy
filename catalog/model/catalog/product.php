@@ -379,6 +379,63 @@ class Product extends \Opencart\System\Engine\Model {
 	}
 
 	/**
+	 * Get Best Sellers
+	 *
+	 * @param array<string, mixed> $data array of filters (filter_category_id, start, limit)
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function getBestSellers(array $data = []): array {
+		$sql = "SELECT DISTINCT `pb`.`total` AS `sold`, `pd`.`name`, `p`.`image`, `p`.`product_id`, `p`.`model`, `p`.`sku`, `p`.`price`, `p`.`tax_class_id`, `p`.`quantity`, `p`.`date_available`, `m`.`name` AS `manufacturer`, " . $this->statement['discount'] . ", " . $this->statement['special'] . ", " . $this->statement['reward'] . ", " . $this->statement['review'] . "
+			FROM `" . DB_PREFIX . "product_bestseller` `pb`
+			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `pb`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
+			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pb`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
+			LEFT JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "')
+			LEFT JOIN `" . DB_PREFIX . "manufacturer` `m` ON (`m`.`manufacturer_id` = `p`.`manufacturer_id`)";
+
+		if (!empty($data['filter_category_id'])) {
+			$sql .= " INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`product_id` = `p`.`product_id` AND `p2c`.`category_id` = '" . (int)$data['filter_category_id'] . "')";
+		}
+
+		$sql .= " WHERE `pd`.`product_id` IS NOT NULL";
+
+		$sql .= " ORDER BY `pb`.`total` DESC";
+
+		if (isset($data['start'], $data['limit'])) {
+			$sql .= " LIMIT " . max(0, (int)$data['start']) . "," . max(1, (int)$data['limit']);
+		}
+
+		$query = $this->db->query($sql);
+
+		return $query->rows;
+	}
+
+	/**
+	 * Get Total Best Sellers
+	 *
+	 * @param array<string, mixed> $data array of filters (filter_category_id)
+	 *
+	 * @return int
+	 */
+	public function getTotalBestSellers(array $data = []): int {
+		$sql = "SELECT COUNT(DISTINCT `pb`.`product_id`) AS `total`
+			FROM `" . DB_PREFIX . "product_bestseller` `pb`
+			INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `pb`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "')
+			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pb`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
+			LEFT JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "')";
+
+		if (!empty($data['filter_category_id'])) {
+			$sql .= " INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`product_id` = `p`.`product_id` AND `p2c`.`category_id` = '" . (int)$data['filter_category_id'] . "')";
+		}
+
+		$sql .= " WHERE `pd`.`product_id` IS NOT NULL";
+
+		$query = $this->db->query($sql);
+
+		return (int)$query->row['total'];
+	}
+
+	/**
 	 * Get Categories
 	 *
 	 * Get the record of the product category records in the database.
