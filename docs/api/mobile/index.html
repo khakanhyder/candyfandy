@@ -1050,6 +1050,62 @@ paths:
                     items:
                       $ref: '#/components/schemas/Category'
 
+  /?route=mobile/category/tree:
+    get:
+      tags: [Categories]
+      summary: All categories with subcategories
+      description: |
+        Returns all top-level categories with their subcategories nested inside.
+        Single API call — no need to request children separately.
+      responses:
+        '200':
+          description: Category tree
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category_id:
+                          type: integer
+                          example: 20
+                        name:
+                          type: string
+                          example: Biscuits
+                        description:
+                          type: string
+                          example: All types of biscuits
+                        image:
+                          type: string
+                          format: uri
+                        sort_order:
+                          type: integer
+                          example: 1
+                        subcategories:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              category_id:
+                                type: integer
+                                example: 26
+                              name:
+                                type: string
+                                example: Chocolate Biscuits
+                              image:
+                                type: string
+                                format: uri
+                              sort_order:
+                                type: integer
+                                example: 1
+
   /?route=mobile/category/info:
     get:
       tags: [Categories]
