@@ -15,7 +15,8 @@ class Tree extends \Opencart\System\Engine\Controller {
 	}
 
 	private function imageUrl(string $path): string {
-		return $path ? HTTP_SERVER . 'image/' . $path : '';
+		if (!$path) return '';
+		return file_exists(DIR_IMAGE . $path) ? HTTP_SERVER . 'image/' . $path : '';
 	}
 
 	/**
