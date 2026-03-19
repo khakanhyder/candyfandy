@@ -36,6 +36,8 @@ tags:
     description: Shopping cart management
   - name: Orders
     description: Order history
+  - name: Brands
+    description: Brands / manufacturers filtered by category
   - name: Wishlist
     description: Customer wishlist
 
@@ -333,6 +335,25 @@ components:
                   image:
                     type: string
                     format: uri
+
+    # ── Brands ──────────────────────────────────────────────────────────────
+
+    Brand:
+      type: object
+      properties:
+        manufacturer_id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Oreo
+        image:
+          type: string
+          format: uri
+          example: https://candyfandy.com/dev/upload/image/catalog/manufacturers/oreo.jpg
+        sort_order:
+          type: integer
+          example: 0
 
     # ── Account ─────────────────────────────────────────────────────────────
 
@@ -1040,6 +1061,103 @@ paths:
                     $ref: '#/components/schemas/CategoryDetail'
         '400':
           description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Brands ────────────────────────────────────────────────────────────────
+
+  /?route=mobile/brand:
+    get:
+      tags: [Brands]
+      summary: List brands by category
+      description: |
+        Returns all brands (manufacturers) that have at least one active product
+        in the given category. Use this after the user taps a category.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/brand]
+        - name: category_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 20
+          description: ID of the category to filter brands by
+      responses:
+        '200':
+          description: Brand list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Brand'
+              example:
+                success: true
+                data:
+                  - manufacturer_id: 12
+                    name: Oreo
+                    image: https://candyfandy.com/dev/upload/image/catalog/manufacturers/oreo.jpg
+                    sort_order: 0
+                  - manufacturer_id: 14
+                    name: Cadbury
+                    image: https://candyfandy.com/dev/upload/image/catalog/manufacturers/cadbury.jpg
+                    sort_order: 1
+        '400':
+          description: category_id missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: category_id is required
+
+  /?route=mobile/brand/info:
+    get:
+      tags: [Brands]
+      summary: Brand detail
+      description: Returns a single brand by manufacturer_id.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/brand/info]
+        - name: manufacturer_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 12
+      responses:
+        '200':
+          description: Brand detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Brand'
+        '400':
+          description: Brand not found or manufacturer_id missing
           content:
             application/json:
               schema:

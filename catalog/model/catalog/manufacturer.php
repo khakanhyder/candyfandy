@@ -92,6 +92,30 @@ class Manufacturer extends \Opencart\System\Engine\Model {
 	}
 
 	/**
+	 * Get Manufacturers by Category
+	 *
+	 * Returns distinct manufacturers that have products in the given category.
+	 *
+	 * @param int $category_id
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function getManufacturersByCategory(int $category_id): array {
+		$query = $this->db->query("
+			SELECT DISTINCT `m`.`manufacturer_id`, `m`.`name`, `m`.`image`, `m`.`sort_order`
+			FROM `" . DB_PREFIX . "manufacturer` `m`
+			INNER JOIN `" . DB_PREFIX . "manufacturer_to_store` `m2s` ON (`m2s`.`manufacturer_id` = `m`.`manufacturer_id`)
+			INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`manufacturer_id` = `m`.`manufacturer_id` AND `p`.`status` = '1')
+			INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`product_id` = `p`.`product_id`)
+			WHERE `p2c`.`category_id` = '" . (int)$category_id . "'
+			AND `m2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "'
+			ORDER BY `m`.`name` ASC
+		");
+
+		return $query->rows;
+	}
+
+	/**
 	 * Get Layout ID
 	 *
 	 * Get the record of the manufacturer layout record in the database.
