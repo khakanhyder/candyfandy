@@ -894,8 +894,15 @@ paths:
   /?route=mobile/product:
     get:
       tags: [Products]
-      summary: List products
-      description: Returns a paginated list of products. No authentication required.
+      summary: List products (Step 3 — by brand & category)
+      description: |
+        Returns a paginated list of products. No authentication required.
+
+        **Category → Brand → Products flow (Step 3):**
+        Pass `manufacturer_id` (from the Brands endpoint) and optionally `category_id`
+        to get products for a specific brand within a category.
+
+        Example: `?route=mobile/product&manufacturer_id=8&category_id=20`
       parameters:
         - name: route
           in: query

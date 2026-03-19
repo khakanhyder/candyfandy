@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Read(//c/laragon/**)",
+      "Bash(tasklist)",
+      "Bash(mysql -u root -e \"SHOW DATABASES;\")",
+      "Bash(mysql -u root --password=\"\" -e \"SHOW DATABASES;\")",
+      "Bash(\"/c/laragon/bin/mysql/mysql-8.0.30-winx64/bin/mysql.exe\" -u root -e \"SHOW DATABASES;\")",
+      "Bash(\"/c/laragon/bin/mysql/mysql-8.4.3-winx64/bin/mysql.exe\" -u root -e \"SHOW DATABASES;\")",
+      "Bash(\"/c/laragon/bin/mysql/mysql-8.4.3-winx64/bin/mysql.exe\" -u root -e \"SHOW TABLES FROM candyfandy;\")"
     ]
   }
 }
