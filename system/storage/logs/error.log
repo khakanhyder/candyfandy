@@ -1,0 +1,55 @@
+2026-03-19 18:04:14 - Error: Error: Table 'candyfandy.oc_product_bestseller' doesn't exist<br/>Error No: 1146<br/>SELECT DISTINCT `pb`.`total` AS `sold`, `pd`.`name`, `p`.`image`, `p`.`product_id`, `p`.`model`, `p`.`sku`, `p`.`price`, `p`.`tax_class_id`, `p`.`quantity`, `p`.`date_available`, `m`.`name` AS `manufacturer`, (SELECT (CASE WHEN `pd2`.`type` = 'P' THEN (`p`.`price` - (`p`.`price` * (`pd2`.`price` / 100))) WHEN `pd2`.`type` = 'S' THEN (`p`.`price` - `pd2`.`price`) ELSE `pd2`.`price` END) FROM `oc_product_discount` `pd2` WHERE `pd2`.`product_id` = `p`.`product_id` AND `pd2`.`customer_group_id` = '1' AND `pd2`.`quantity` = '1' AND `pd2`.`special` = '0' AND ((`pd2`.`date_start` = '0000-00-00' OR `pd2`.`date_start` < NOW()) AND (`pd2`.`date_end` = '0000-00-00' OR `pd2`.`date_end` > NOW())) ORDER BY `pd2`.`priority` ASC, `pd2`.`price` ASC LIMIT 1) AS `discount`, (SELECT (CASE WHEN `ps`.`type` = 'P' THEN (`p`.`price` - (`p`.`price` * (`ps`.`price` / 100))) WHEN `ps`.`type` = 'S' THEN (`p`.`price` - `ps`.`price`) ELSE `ps`.`price` END) FROM `oc_product_discount` `ps` WHERE `ps`.`product_id` = `p`.`product_id` AND `ps`.`customer_group_id` = '1' AND `ps`.`quantity` = '1' AND `ps`.`special` = '1' AND ((`ps`.`date_start` = '0000-00-00' OR `ps`.`date_start` < NOW()) AND (`ps`.`date_end` = '0000-00-00' OR `ps`.`date_end` > NOW())) ORDER BY `ps`.`priority` ASC, `ps`.`price` ASC LIMIT 1) AS `special`, (SELECT `pr`.`points` FROM `oc_product_reward` `pr` WHERE `pr`.`product_id` = `p`.`product_id` AND `pr`.`customer_group_id` = '1') AS `reward`, (SELECT COUNT(*) FROM `oc_review` `r` WHERE `r`.`product_id` = `p`.`product_id` AND `r`.`status` = '1' GROUP BY `r`.`product_id`) AS `reviews`
+			FROM `oc_product_bestseller` `pb`
+			INNER JOIN `oc_product_to_store` `p2s` ON (`p2s`.`product_id` = `pb`.`product_id` AND `p2s`.`store_id` = '0')
+			INNER JOIN `oc_product` `p` ON (`p`.`product_id` = `pb`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW())
+			LEFT JOIN `oc_product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '1')
+			LEFT JOIN `oc_manufacturer` `m` ON (`m`.`manufacturer_id` = `p`.`manufacturer_id`) WHERE `pd`.`product_id` IS NOT NULL ORDER BY `pb`.`total` DESC LIMIT 0,20
+File: C:\laragon\www\candyfandy\system\library\db\mysqli.php
+Line: 122
+
+Backtrace: 0
+File: C:\laragon\www\candyfandy\system\library\db.php
+Line: 54
+Class: Opencart\System\Library\DB\MySQLi
+Function: query
+
+Backtrace: 1
+File: C:\laragon\www\candyfandy\catalog\model\catalog\product.php
+Line: 408
+Class: Opencart\System\Library\DB
+Function: query
+
+Backtrace: 2
+File: C:\laragon\www\candyfandy\system\engine\loader.php
+Line: 343
+Class: Opencart\Catalog\Model\Catalog\Product
+Function: getBestSellers
+
+Backtrace: 3
+File: C:\laragon\www\candyfandy\system\engine\proxy.php
+Line: 87
+Class: Opencart\System\Engine\Loader
+Function: Opencart\System\Engine\{closure}
+
+Backtrace: 4
+File: C:\laragon\www\candyfandy\catalog\controller\mobile\product\bestseller.php
+Line: 59
+Class: Opencart\System\Engine\Proxy
+Function: __call
+
+Backtrace: 5
+File: C:\laragon\www\candyfandy\system\engine\action.php
+Line: 96
+Class: Opencart\Catalog\Controller\Mobile\Product\Bestseller
+Function: index
+
+Backtrace: 6
+File: C:\laragon\www\candyfandy\system\framework.php
+Line: 259
+Class: Opencart\System\Engine\Action
+Function: execute
+
+Backtrace: 7
+File: C:\laragon\www\candyfandy\index.php
+Line: 20
+Function: require_once
