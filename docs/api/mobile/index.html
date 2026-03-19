@@ -351,6 +351,18 @@ components:
                     type: string
                     format: uri
 
+    # ── Best Sellers ─────────────────────────────────────────────────────────
+
+    BestSellerListItem:
+      allOf:
+        - $ref: '#/components/schemas/ProductListItem'
+        - type: object
+          properties:
+            total_sold:
+              type: integer
+              description: Total units sold (from product_bestseller table)
+              example: 342
+
     # ── Brands ──────────────────────────────────────────────────────────────
 
     Brand:
@@ -1014,6 +1026,76 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
+  /?route=mobile/product/bestseller:
+    get:
+      tags: [Products]
+      summary: Best sellers
+      description: |
+        Returns the best-selling products ordered by total units sold (descending).
+        Optionally filter by `category_id` to get best sellers within a specific category or subcategory.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/product/bestseller]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+          description: Filter best sellers by category or subcategory ID
+      responses:
+        '200':
+          description: Best seller list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BestSellerListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              example:
+                success: true
+                data:
+                  - product_id: 101
+                    name: Haribo Gold Bears
+                    model: HRB-001
+                    sku: SKU-HRB-001
+                    image: https://candyfandy.com/dev/image/catalog/products/haribo.jpg
+                    price: 2.99
+                    special: 1.99
+                    tax_class_id: 9
+                    quantity: 150
+                    rating: 4
+                    reviews: 23
+                    manufacturer: Haribo
+                    date_available: '2024-01-01'
+                    total_sold: 342
+                pagination:
+                  page: 1
+                  limit: 20
+                  total: 50
+                  total_pages: 3
   # â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /?route=mobile/category:
