@@ -1324,6 +1324,15 @@ $('#product-code').on('click', '.btn', function() {
 });
 
 // Manufacturer
+// Clear the field on focus so all manufacturers are shown (not just the pre-filled one)
+$('#input-manufacturer').on('focus', function() {
+    $(this).data('mfr-prev', $(this).val()).val('');
+}).on('blur', function() {
+    if (!$(this).val()) {
+        $(this).val($(this).data('mfr-prev') || '');
+    }
+});
+
 $('#input-manufacturer').autocomplete({
     'source': function(request, response) {
         $.ajax({
@@ -1347,6 +1356,7 @@ $('#input-manufacturer').autocomplete({
     'select': function(item) {
         $('#input-manufacturer').val(decodeHTMLEntities(item['label']));
         $('#input-manufacturer-id').val(item['value']);
+        $('#input-manufacturer').data('mfr-prev', item['label']);
     }
 });
 
