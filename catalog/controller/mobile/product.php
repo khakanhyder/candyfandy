@@ -21,18 +21,20 @@ class Product extends \Opencart\System\Engine\Controller {
 	private function formatProduct(array $p): array {
 		$special = $p['special'] ?: null;
 		return [
-			'product_id'  => (int)$p['product_id'],
-			'name'        => $p['name'],
-			'model'       => $p['model'],
-			'sku'         => $p['sku'],
-			'image'       => $this->imageUrl($p['image']),
-			'price'       => (float)$p['price'],
-			'special'     => $special !== null ? (float)$special : null,
-			'tax_class_id'=> (int)$p['tax_class_id'],
-			'quantity'    => (int)$p['quantity'],
-			'rating'      => (int)$p['rating'],
-			'reviews'     => (int)$p['reviews'],
-			'manufacturer'=> $p['manufacturer'] ?? '',
+			'product_id'     => (int)$p['product_id'],
+			'name'           => $p['name'],
+			'model'          => $p['model'],
+			'sku'            => $p['sku'],
+			'image'          => $this->imageUrl($p['image']),
+			'price'          => (float)$p['price'],
+			'special'        => $special !== null ? (float)$special : null,
+			'tax_class_id'   => (int)$p['tax_class_id'],
+			'quantity'       => (int)$p['quantity'],
+			'rating'         => (int)$p['rating'],
+			'reviews'        => (int)$p['reviews'],
+			'manufacturer_id' => (int)$p['manufacturer_id'],
+			'manufacturer'    => '',
+			'category_id'     => null,
 			'date_available' => $p['date_available'],
 		];
 	}
@@ -44,16 +46,16 @@ class Product extends \Opencart\System\Engine\Controller {
 	public function index(): void {
 		$this->load->model('catalog/product');
 
-		$page     = max(1, (int)($this->request->get['page'] ?? 1));
-		$limit    = min(100, max(1, (int)($this->request->get['limit'] ?? 20)));
+		$page  = max(1, (int)($this->request->get['page'] ?? 1));
+		$limit = min(100, max(1, (int)($this->request->get['limit'] ?? 20)));
 
 		$filters = [
-			'filter_category_id'    => (int)($this->request->get['category_id'] ?? 0) ?: null,
-			'filter_manufacturer_id'=> (int)($this->request->get['manufacturer_id'] ?? 0) ?: null,
-			'sort'                  => $this->request->get['sort'] ?? 'p.date_added',
-			'order'                 => strtoupper($this->request->get['order'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC',
-			'start'                 => ($page - 1) * $limit,
-			'limit'                 => $limit,
+			'filter_category_id'     => (int)($this->request->get['category_id'] ?? 0) ?: null,
+			'filter_manufacturer_id' => (int)($this->request->get['manufacturer_id'] ?? 0) ?: null,
+			'sort'                   => $this->request->get['sort'] ?? 'p.date_added',
+			'order'                  => strtoupper($this->request->get['order'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC',
+			'start'                  => ($page - 1) * $limit,
+			'limit'                  => $limit,
 		];
 
 		// Remove null filters
@@ -62,9 +64,34 @@ class Product extends \Opencart\System\Engine\Controller {
 		$products = $this->model_catalog_product->getProducts($filters);
 		$total    = $this->model_catalog_product->getTotalProducts($filters);
 
+		// Batch load manufacturer names (single query, no N+1)
+		$manufacturer_names = [];
+		$manufacturer_ids = array_unique(array_filter(array_column($products, 'manufacturer_id')));
+		if ($manufacturer_ids) {
+			$ids = implode(',', array_map('intval', $manufacturer_ids));
+			$result = $this->db->query("SELECT `manufacturer_id`, `name` FROM `" . DB_PREFIX . "manufacturer` WHERE `manufacturer_id` IN (" . $ids . ")");
+			foreach ($result->rows as $row) {
+				$manufacturer_names[(int)$row['manufacturer_id']] = $row['name'];
+			}
+		}
+
+		// Batch load primary category_id per product (single query, no N+1)
+		$category_map = [];
+		$product_ids = array_filter(array_column($products, 'product_id'));
+		if ($product_ids) {
+			$ids = implode(',', array_map('intval', $product_ids));
+			$result = $this->db->query("SELECT `product_id`, MIN(`category_id`) AS `category_id` FROM `" . DB_PREFIX . "product_to_category` WHERE `product_id` IN (" . $ids . ") GROUP BY `product_id`");
+			foreach ($result->rows as $row) {
+				$category_map[(int)$row['product_id']] = (int)$row['category_id'];
+			}
+		}
+
 		$items = [];
 		foreach ($products as $p) {
-			$items[] = $this->formatProduct($p);
+			$item = $this->formatProduct($p);
+			$item['manufacturer'] = $manufacturer_names[(int)$p['manufacturer_id']] ?? '';
+			$item['category_id']  = $category_map[(int)$p['product_id']] ?? null;
+			$items[] = $item;
 		}
 
 		$this->json([
@@ -112,11 +139,11 @@ class Product extends \Opencart\System\Engine\Controller {
 			foreach ($option['product_option_value'] as $v) {
 				$values[] = [
 					'product_option_value_id' => (int)$v['product_option_value_id'],
-					'name'     => $v['name'],
-					'image'    => $this->imageUrl($v['image']),
-					'price'    => (float)$v['price'],
+					'name'         => $v['name'],
+					'image'        => $this->imageUrl($v['image']),
+					'price'        => (float)$v['price'],
 					'price_prefix' => $v['price_prefix'],
-					'quantity' => (int)$v['quantity'],
+					'quantity'     => (int)$v['quantity'],
 				];
 			}
 			$options[] = [
@@ -154,18 +181,19 @@ class Product extends \Opencart\System\Engine\Controller {
 		}
 
 		$data = $this->formatProduct($p);
-		$data['description'] = html_entity_decode($p['description'] ?? '', ENT_QUOTES, 'UTF-8');
-		$data['images']      = $images;
-		$data['options']     = $options;
-		$data['reviews']     = $reviews;
-		$data['related']     = $related;
-		$data['weight']      = $p['weight'];
-		$data['weight_class']= $p['weight_class'] ?? '';
-		$data['length']      = $p['length'];
-		$data['width']       = $p['width'];
-		$data['height']      = $p['height'];
-		$data['length_class']= $p['length_class'] ?? '';
-		$data['minimum']     = (int)$p['minimum'];
+		$data['manufacturer']  = $p['manufacturer'] ?? '';
+		$data['description']   = html_entity_decode($p['description'] ?? '', ENT_QUOTES, 'UTF-8');
+		$data['images']        = $images;
+		$data['options']       = $options;
+		$data['reviews']       = $reviews;
+		$data['related']       = $related;
+		$data['weight']        = $p['weight'];
+		$data['weight_class']  = $p['weight_class'] ?? '';
+		$data['length']        = $p['length'];
+		$data['width']         = $p['width'];
+		$data['height']        = $p['height'];
+		$data['length_class']  = $p['length_class'] ?? '';
+		$data['minimum']       = (int)$p['minimum'];
 
 		$this->json(['success' => true, 'data' => $data]);
 	}
