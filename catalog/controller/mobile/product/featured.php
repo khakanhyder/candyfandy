@@ -49,15 +49,18 @@ class Featured extends \Opencart\System\Engine\Controller {
 		$page  = max(1, (int)($this->request->get['page'] ?? 1));
 		$limit = min(100, max(1, (int)($this->request->get['limit'] ?? 20)));
 
-		// Collect product IDs from all active featured modules
+		// Collect product IDs from all featured modules (status is inside the JSON setting)
 		$query = $this->db->query(
 			"SELECT `setting` FROM `" . DB_PREFIX . "module`
-			 WHERE `code` = 'opencart.featured' AND `status` = '1'"
+			 WHERE `code` = 'opencart.featured'"
 		);
 
 		$product_ids = [];
 		foreach ($query->rows as $row) {
 			$setting = json_decode($row['setting'], true);
+			if (empty($setting['status'])) {
+				continue;
+			}
 			if (!empty($setting['product']) && is_array($setting['product'])) {
 				foreach ($setting['product'] as $id) {
 					$product_ids[(int)$id] = true;
