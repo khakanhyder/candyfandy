@@ -12,6 +12,13 @@ jobs:
     steps:
       - name: Deploy via cPanel Git API
         run: |
-          curl -s "https://candyfandy.com:2083/execute/VersionControl/update" \
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            "https://candyfandy.com:2083/execute/VersionControl/update" \
             -u "${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
-            -d "repository=/home/candyfandy/public_html/dev"
+            -d "repository=/home/candyfandy/public_html/dev")
+          echo "$RESPONSE"
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "Deployment failed with status $HTTP_STATUS"
+            exit 1
+          fi
