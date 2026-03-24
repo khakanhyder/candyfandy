@@ -10,23 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.SSH_HOST }}
-          username: ${{ vars.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
-          script: |
-            cd /home/candyfandy/public_html/dev
-            echo "=== Current HEAD ==="
-            git rev-parse HEAD
-            echo "=== Fetching ==="
-            git fetch https://${{ secrets.GH_TOKEN }}@github.com/khakanhyder/candyfandy.git main
-            echo "=== FETCH_HEAD ==="
-            cat .git/FETCH_HEAD
-            echo "=== Resetting ==="
-            git reset --hard FETCH_HEAD
-            echo "=== New HEAD ==="
-            git rev-parse HEAD
-            echo "=== Done ==="
+      - name: Deploy via cPanel Git API
+        run: |
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            "https://candyfandy.com:2083/execute/VersionControl/update" \
+            -H "Authorization: cpanel ${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
+            -d "repository_root=/home/candyfandy/public_html/dev")
+          echo "$RESPONSE"
