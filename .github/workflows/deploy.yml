@@ -19,5 +19,5 @@ jobs:
           port: 22
           script: |
             cd /home/candyfandy/public_html/dev
-            git fetch origin
-            git reset --hard origin/main
+            git fetch https://${{ secrets.GH_TOKEN }}@github.com/khakanhyder/candyfandy.git main
+            git reset --hard FETCH_HEAD
