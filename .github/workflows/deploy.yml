@@ -10,15 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via cPanel Git API
-        run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-            "https://candyfandy.com:2083/execute/VersionControl/update" \
-            -H "Authorization: cpanel ${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
-            -d "repository_root=/home/candyfandy/public_html/dev")
-          echo "$RESPONSE"
-          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "Deployment failed with status $HTTP_STATUS"
-            exit 1
-          fi
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/candyfandy/public_html/dev
+            git pull origin main
