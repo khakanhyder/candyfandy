@@ -1081,6 +1081,140 @@ paths:
                   total: 50
                   total_pages: 3
 
+  /?route=mobile/product/featured:
+    get:
+      tags: [Products]
+      summary: Featured products
+      description: |
+        Returns products manually selected as **Featured** in the admin panel.
+        Results are paginated. No authentication required.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/product/featured]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Featured product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              example:
+                success: true
+                data:
+                  - product_id: 55
+                    name: Skittles Rainbow
+                    model: SKT-001
+                    sku: SKU-SKT-001
+                    image: https://candyfandy.com/dev/upload/image/catalog/products/skittles.jpg
+                    price: 1.99
+                    special: null
+                    tax_class_id: 9
+                    quantity: 200
+                    rating: 5
+                    reviews: 41
+                    manufacturer: Skittles
+                    date_available: "2024-01-01"
+                pagination:
+                  page: 1
+                  limit: 20
+                  total: 12
+                  total_pages: 1
+
+  /?route=mobile/product/popular:
+    get:
+      tags: [Products]
+      summary: Popular products
+      description: |
+        Returns products sorted by **highest rating** (descending).
+        Optionally filter by `category_id` to get popular products within a specific category (includes subcategories).
+        No authentication required.
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mobile/product/popular]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+          description: Filter by category (includes subcategories)
+      responses:
+        '200':
+          description: Popular product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductListItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              example:
+                success: true
+                data:
+                  - product_id: 88
+                    name: Sour Patch Kids
+                    model: SPK-001
+                    sku: SKU-SPK-001
+                    image: https://candyfandy.com/dev/upload/image/catalog/products/sourpatch.jpg
+                    price: 2.49
+                    special: 1.99
+                    tax_class_id: 9
+                    quantity: 120
+                    rating: 5
+                    reviews: 67
+                    manufacturer: Mondelez
+                    date_available: "2024-01-01"
+                pagination:
+                  page: 1
+                  limit: 20
+                  total: 38
+                  total_pages: 2
+
   # ── Categories ────────────────────────────────────────────────────────────
 
   /?route=mobile/category:
