@@ -14,7 +14,7 @@ jobs:
         run: |
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             "https://candyfandy.com:2083/execute/VersionControl/update" \
-            -u "${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
+            -H "Authorization: cpanel ${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
             -d "repository=/home/candyfandy/public_html/dev")
           echo "$RESPONSE"
           HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
