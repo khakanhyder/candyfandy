@@ -19,5 +19,14 @@ jobs:
           port: 22
           script: |
             cd /home/candyfandy/public_html/dev
+            echo "=== Current HEAD ==="
+            git rev-parse HEAD
+            echo "=== Fetching ==="
             git fetch https://${{ secrets.GH_TOKEN }}@github.com/khakanhyder/candyfandy.git main
+            echo "=== FETCH_HEAD ==="
+            cat .git/FETCH_HEAD
+            echo "=== Resetting ==="
             git reset --hard FETCH_HEAD
+            echo "=== New HEAD ==="
+            git rev-parse HEAD
+            echo "=== Done ==="
