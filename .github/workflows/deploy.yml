@@ -1,0 +1,17 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via cPanel Git API
+        run: |
+          curl -s "https://candyfandy.com:2083/execute/VersionControl/update" \
+            -u "${{ vars.CPANEL_USERNAME }}:${{ vars.CPANEL_API_TOKEN }}" \
+            -d "repository=/home/candyfandy/public_html/dev"
