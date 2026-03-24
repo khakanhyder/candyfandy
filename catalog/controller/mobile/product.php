@@ -14,7 +14,7 @@ class Product extends \Opencart\System\Engine\Controller {
 		$this->response->setOutput(json_encode($data));
 	}
 
-	private function imageUrl(string $path): string {
+	private function imageUrl(?string $path): string {
 		return $path ? HTTP_SERVER . 'image/' . $path : '';
 	}
 
