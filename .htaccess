@@ -46,6 +46,9 @@ Options -Indexes
 
 ## SEO URL Settings
 RewriteEngine On
+## Ensure Authorization headers are passed to PHP
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 ## If your opencart installation does not run on the main web folder make sure you folder it does run in ie. / becomes /shop/
 RewriteBase /dev/
 ## Rewrite Rules
