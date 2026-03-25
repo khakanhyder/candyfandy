@@ -3,7 +3,11 @@ namespace Opencart\Catalog\Controller\Mobile\Auth;
 
 class Logout extends \Opencart\System\Engine\Controller {
 	public function index(): void {
-		$auth = $this->request->server['HTTP_AUTHORIZATION'] ?? '';
+		$auth = $this->request->server['HTTP_AUTHORIZATION'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+		if (!$auth && function_exists('apache_request_headers')) {
+			$h = apache_request_headers();
+			$auth = $h['Authorization'] ?? $h['authorization'] ?? '';
+		}
 		if (preg_match('/Bearer\s+(.+)/i', $auth, $m)) {
 			$this->db->query("DELETE FROM `" . DB_PREFIX . "mobile_token` WHERE `token` = '" . $this->db->escape(trim($m[1])) . "'");
 		}

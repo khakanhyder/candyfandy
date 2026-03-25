@@ -16,7 +16,11 @@ class Account extends \Opencart\System\Engine\Controller {
 	}
 
 	private function getCustomerId(): int {
-		$auth = $this->request->server['HTTP_AUTHORIZATION'] ?? '';
+		$auth = $this->request->server['HTTP_AUTHORIZATION'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+		if (!$auth && function_exists('apache_request_headers')) {
+			$h = apache_request_headers();
+			$auth = $h['Authorization'] ?? $h['authorization'] ?? '';
+		}
 		if (!preg_match('/Bearer\s+(.+)/i', $auth, $m)) {
 			return 0;
 		}
