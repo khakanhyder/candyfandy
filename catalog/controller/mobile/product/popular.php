@@ -39,7 +39,7 @@ class Popular extends \Opencart\System\Engine\Controller {
 
 	/**
 	 * GET ?route=mobile/product/popular
-	 * Params: page, limit, category_id
+	 * Params: page, limit
 	 *
 	 * Returns products sorted by rating (highest first).
 	 */
@@ -55,11 +55,6 @@ class Popular extends \Opencart\System\Engine\Controller {
 			'start' => ($page - 1) * $limit,
 			'limit' => $limit,
 		];
-
-		if (!empty($this->request->get['category_id'])) {
-			$filters['filter_category_id']  = (int)$this->request->get['category_id'];
-			$filters['filter_sub_category'] = true;
-		}
 
 		$products = $this->model_catalog_product->getProducts($filters);
 		$total    = $this->model_catalog_product->getTotalProducts($filters);
