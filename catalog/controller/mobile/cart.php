@@ -46,6 +46,11 @@ class Cart extends \Opencart\System\Engine\Controller {
 		if (!isset($this->session->data['customer_token'])) {
 			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
 		}
+		
+		// Immediately reboot the native Customer and Cart libraries so they
+		// recognize the new authenticated session and clear their guest caches.
+		$this->registry->set('customer', new \Opencart\System\Library\Cart\Customer($this->registry));
+		$this->registry->set('cart', new \Opencart\System\Library\Cart\Cart($this->registry));
 	}
 
 	private function buildCartResponse(): array {

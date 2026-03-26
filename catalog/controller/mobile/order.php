@@ -48,6 +48,7 @@ class Order extends \Opencart\System\Engine\Controller {
 		if (!isset($this->session->data['customer_token'])) {
 			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
 		}
+		$this->registry->set('customer', new \Opencart\System\Library\Cart\Customer($this->registry));
 
 		$page  = max(1, (int)($this->request->get['page'] ?? 1));
 		$limit = min(50, max(1, (int)($this->request->get['limit'] ?? 10)));
