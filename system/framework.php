@@ -128,10 +128,13 @@ if (isset($request->get['route'])) {
 	// Auto-route mobile endpoint methods since frontend tends to use 'mobile/cart/add' instead of 'mobile/cart.add'
 	if (str_starts_with($request->get['route'], 'mobile/') && substr_count($request->get['route'], '/') > 1) {
 		$parts = explode('/', $request->get['route']);
-		if (count($parts) === 3 && is_file(DIR_APPLICATION . 'controller/' . $parts[0] . '/' . $parts[1] . '.php')) {
-			$request->get['route'] = $parts[0] . '/' . $parts[1] . '.' . $parts[2];
-		} elseif (count($parts) === 4 && is_file(DIR_APPLICATION . 'controller/' . $parts[0] . '/' . $parts[1] . '/' . $parts[2] . '.php')) {
-			$request->get['route'] = $parts[0] . '/' . $parts[1] . '/' . $parts[2] . '.' . $parts[3];
+		$exact_file = DIR_APPLICATION . 'controller/' . $request->get['route'] . '.php';
+		if (!is_file($exact_file)) {
+			if (count($parts) === 3 && is_file(DIR_APPLICATION . 'controller/' . $parts[0] . '/' . $parts[1] . '.php')) {
+				$request->get['route'] = $parts[0] . '/' . $parts[1] . '.' . $parts[2];
+			} elseif (count($parts) === 4 && is_file(DIR_APPLICATION . 'controller/' . $parts[0] . '/' . $parts[1] . '/' . $parts[2] . '.php')) {
+				$request->get['route'] = $parts[0] . '/' . $parts[1] . '/' . $parts[2] . '.' . $parts[3];
+			}
 		}
 	}
 }
