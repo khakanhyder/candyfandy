@@ -136,7 +136,7 @@ class Checkout extends \Opencart\System\Engine\Controller {
 	 * Body: address_id OR (firstname, lastname, address_1, city, country_id, [zone_id, postcode, company, address_2])
 	 * Returns available shipping methods for the given address.
 	 */
-	public function shippingMethods(): void {
+	public function shipping_methods(): void {
 		$customer_id = $this->requireAuth();
 		if (!$customer_id) return;
 
@@ -189,7 +189,7 @@ class Checkout extends \Opencart\System\Engine\Controller {
 	 * Optional body: address_id (or inline address fields) — used as billing address
 	 * Returns available payment methods.
 	 */
-	public function paymentMethods(): void {
+	public function payment_methods(): void {
 		$customer_id = $this->requireAuth();
 		if (!$customer_id) return;
 
