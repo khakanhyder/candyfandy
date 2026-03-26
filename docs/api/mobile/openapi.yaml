@@ -38,6 +38,8 @@ tags:
     description: Order history
   - name: Brands
     description: Brands / manufacturers filtered by category
+  - name: Checkout
+    description: Shipping methods, payment methods, and order placement
   - name: Wishlist
     description: Customer wishlist
 
@@ -636,6 +638,86 @@ components:
         currency_value:
           type: number
           example: 1.0
+
+    # ── Checkout ─────────────────────────────────────────────────────────────
+
+    ShippingMethod:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Method code in {extension}.{option} format"
+          example: flat.flat
+        name:
+          type: string
+          example: Flat Shipping Rate
+        cost:
+          type: number
+          format: float
+          example: 5.00
+        text:
+          type: string
+          description: Formatted cost with currency
+          example: "$5.00"
+
+    PaymentMethod:
+      type: object
+      properties:
+        code:
+          type: string
+          example: cod
+        name:
+          type: string
+          example: Cash on Delivery
+
+    CheckoutAddress:
+      type: object
+      description: Either provide address_id for a saved address, or supply all required inline fields.
+      properties:
+        address_id:
+          type: integer
+          description: ID of a saved customer address (alternative to inline fields)
+          example: 3
+        firstname:
+          type: string
+          example: John
+        lastname:
+          type: string
+          example: Doe
+        company:
+          type: string
+          example: ""
+        address_1:
+          type: string
+          example: 123 Main St
+        address_2:
+          type: string
+          example: ""
+        city:
+          type: string
+          example: New York
+        postcode:
+          type: string
+          example: "10001"
+        country_id:
+          type: integer
+          example: 223
+        zone_id:
+          type: integer
+          example: 3635
+
+    CheckoutConfirmResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Order placed successfully
+        order_id:
+          type: integer
+          example: 88
 
     # ── Wishlist ─────────────────────────────────────────────────────────────
 
@@ -2277,6 +2359,181 @@ paths:
                 $ref: '#/components/schemas/SuccessMessage'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Checkout ────────────────────────────────────────────────────────────────
+
+  /?route=mobile/checkout/shipping_methods:
+    post:
+      tags: [Checkout]
+      summary: Get shipping methods
+      description: |
+        Returns available shipping methods for the given address.
+
+        Supply either a saved **address_id** or inline address fields
+        (`firstname`, `lastname`, `address_1`, `city`, `country_id`, and optionally `zone_id`, `postcode`).
+
+        Returns an empty array when the cart contains no shippable items.
+      security:
+        - BearerAuth: []
+
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutAddress'
+      responses:
+        '200':
+          description: List of available shipping methods
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingMethod'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error or no shipping available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/checkout/payment_methods:
+    post:
+      tags: [Checkout]
+      summary: Get payment methods
+      description: |
+        Returns available payment methods.
+
+        Optionally pass an **address_id** or inline address fields to use as the billing address
+        (some payment gateways are geo-restricted).
+      security:
+        - BearerAuth: []
+
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutAddress'
+      responses:
+        '200':
+          description: List of available payment methods
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: No payment methods available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /?route=mobile/checkout/confirm:
+    post:
+      tags: [Checkout]
+      summary: Place order
+      description: |
+        Validates the cart, resolves shipping & payment, creates the order, and clears the cart.
+
+        **Address:** provide a saved `address_id` **or** inline address fields.
+
+        **Shipping:** `shipping_method` is required whenever the cart contains shippable items.
+        Use the `shipping_methods` endpoint to get valid codes first.
+
+        **Payment:** `payment_method` code is always required.
+        Use the `payment_methods` endpoint to get valid codes first.
+      security:
+        - BearerAuth: []
+
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CheckoutAddress'
+                - type: object
+                  properties:
+                    shipping_method:
+                      type: string
+                      description: "Shipping method code (e.g. flat.flat). Required when cart has shippable items."
+                      example: flat.flat
+                    payment_method:
+                      type: string
+                      description: "Payment method code (e.g. cod)."
+                      example: cod
+                    comment:
+                      type: string
+                      description: Optional order comment
+                      example: Please leave at the door
+      responses:
+        '200':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutConfirmResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error (empty cart, out of stock, invalid address/method)
           content:
             application/json:
               schema:
