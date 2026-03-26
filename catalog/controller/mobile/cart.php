@@ -43,6 +43,9 @@ class Cart extends \Opencart\System\Engine\Controller {
 	/** Inject customer into session so $this->cart works correctly */
 	private function loginCustomer(int $customer_id): void {
 		$this->session->data['customer_id'] = $customer_id;
+		if (!isset($this->session->data['customer_token'])) {
+			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
+		}
 	}
 
 	private function buildCartResponse(): array {

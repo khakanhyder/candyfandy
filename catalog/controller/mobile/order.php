@@ -45,6 +45,9 @@ class Order extends \Opencart\System\Engine\Controller {
 		if (!$customer_id) return;
 
 		$this->session->data['customer_id'] = $customer_id;
+		if (!isset($this->session->data['customer_token'])) {
+			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
+		}
 
 		$page  = max(1, (int)($this->request->get['page'] ?? 1));
 		$limit = min(50, max(1, (int)($this->request->get['limit'] ?? 10)));
@@ -87,6 +90,9 @@ class Order extends \Opencart\System\Engine\Controller {
 		if (!$customer_id) return;
 
 		$this->session->data['customer_id'] = $customer_id;
+		if (!isset($this->session->data['customer_token'])) {
+			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
+		}
 
 		$order_id = (int)($this->request->get['order_id'] ?? 0);
 

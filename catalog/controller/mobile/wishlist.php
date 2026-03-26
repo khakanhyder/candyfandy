@@ -48,6 +48,9 @@ class Wishlist extends \Opencart\System\Engine\Controller {
 		if (!$customer_id) return;
 
 		$this->session->data['customer_id'] = $customer_id;
+		if (!isset($this->session->data['customer_token'])) {
+			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
+		}
 
 		$wishlist_ids = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "customer_wishlist` WHERE `customer_id` = '" . (int)$customer_id . "'");
 
