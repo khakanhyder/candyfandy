@@ -44,7 +44,7 @@ class Search extends \Opencart\System\Engine\Controller {
 			'limit'              => $limit,
 		];
 
-		$filters = array_filter($filters, fn($v) => $v !== null && $v !== false && $v !== 0);
+		$filters = array_filter($filters, fn($v) => $v !== null && $v !== false);
 
 		$products = $this->model_catalog_product->getProducts($filters);
 		$total    = $this->model_catalog_product->getTotalProducts($filters);
