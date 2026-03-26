@@ -789,6 +789,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Logged out
@@ -1537,6 +1543,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Customer profile
@@ -1565,6 +1577,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -1634,6 +1652,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Address list
@@ -1664,6 +1688,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -1755,6 +1785,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Cart contents
@@ -1783,6 +1819,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -1855,6 +1897,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       requestBody:
         required: true
         content:
@@ -1901,6 +1949,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -1955,6 +2009,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Cart cleared
@@ -1978,6 +2038,12 @@ paths:
       security:
         - BearerAuth: []
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -2038,6 +2104,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: route
           in: query
           required: true
@@ -2092,6 +2164,12 @@ paths:
           schema:
             type: string
           description: 'Bearer <token>'
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
       responses:
         '200':
           description: Wishlist items
@@ -2122,6 +2200,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
@@ -2161,6 +2245,12 @@ paths:
         - BearerAuth: []
 
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
         - name: Authorization
           in: header
           required: true
