@@ -1866,6 +1866,65 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
 
+  /?route=mobile/account/address_delete:
+    post:
+      tags: [Account]
+      summary: Delete address
+      security:
+        - BearerAuth: []
+
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'Bearer <token>'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [address_id]
+              properties:
+                address_id:
+                  type: integer
+                  example: 7
+                  description: ID of the address to delete
+      responses:
+        '200':
+          description: Address deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Address deleted successfully
+        '400':
+          description: Address not found or does not belong to the customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Missing address_id or cannot delete last address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ── Cart ──────────────────────────────────────────────────────────────────
 
   /?route=mobile/cart:

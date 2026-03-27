@@ -159,6 +159,47 @@ class Account extends \Opencart\System\Engine\Controller {
 	}
 
 	/**
+	 * POST ?route=mobile/account/address_delete
+	 * Body: address_id
+	 */
+	public function address_delete(): void {
+		$customer_id = $this->requireAuth();
+		if (!$customer_id) return;
+
+		if ($this->request->server['REQUEST_METHOD'] !== 'POST') {
+			$this->json(['success' => false, 'error' => 'Method not allowed'], 400);
+			return;
+		}
+
+		$address_id = (int)($this->request->post['address_id'] ?? 0);
+
+		if (!$address_id) {
+			$this->json(['success' => false, 'error' => 'address_id is required'], 422);
+			return;
+		}
+
+		$this->load->model('account/address');
+
+		// Verify address belongs to this customer
+		$address = $this->model_account_address->getAddress($customer_id, $address_id);
+
+		if (!$address) {
+			$this->json(['success' => false, 'error' => 'Address not found'], 400);
+			return;
+		}
+
+		// Cannot delete the only address
+		if ($this->model_account_address->getTotalAddresses($customer_id) <= 1) {
+			$this->json(['success' => false, 'error' => 'Cannot delete your only address'], 422);
+			return;
+		}
+
+		$this->model_account_address->deleteAddress($customer_id, $address_id);
+
+		$this->json(['success' => true, 'message' => 'Address deleted successfully']);
+	}
+
+	/**
 	 * POST ?route=mobile/account/address_add
 	 * Body: firstname, lastname, address_1, city, postcode, country_id, zone_id
 	 */
