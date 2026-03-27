@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -57,6 +57,9 @@ tags:
     description: Shipping methods, payment methods, and order placement
   - name: Wishlist
     description: Customer wishlist
+  - name: Location
+    description: Countries and states/zones
+
 
 components:
   securitySchemes:
@@ -761,6 +764,39 @@ components:
         rating:
           type: integer
           example: 4
+
+    Country:
+      type: object
+      properties:
+        country_id:
+          type: integer
+          example: 223
+        name:
+          type: string
+          example: United States
+        iso_code_2:
+          type: string
+          example: US
+        iso_code_3:
+          type: string
+          example: USA
+        postcode_required:
+          type: boolean
+          example: true
+
+    Zone:
+      type: object
+      properties:
+        zone_id:
+          type: integer
+          example: 3635
+        name:
+          type: string
+          example: New York
+        code:
+          type: string
+          example: NY
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # PATHS
@@ -2612,6 +2648,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Location ────────────────────────────────────────────────────────────────
+
+  /?route=mobile/location/countries:
+    get:
+      tags: [Location]
+      summary: List countries
+      description: Returns a list of all active countries.
+      responses:
+        '200':
+          description: List of countries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  countries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Country'
+
+  /?route=mobile/location/zones:
+    get:
+      tags: [Location]
+      summary: List zones (states)
+      description: Returns a list of all active zones/states for a given country.
+      parameters:
+        - name: country_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 223
+          description: Country ID to get zones for
+      responses:
+        '200':
+          description: List of zones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  country_id:
+                    type: integer
+                    example: 223
+                  zones:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Zone'
+        '400':
+          description: country_id is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 </script>
 <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>

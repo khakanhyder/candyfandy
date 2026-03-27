@@ -1097,7 +1097,69 @@ All API responses follow this structure:
 
 ---
 
+---
+11. Location
+
+### 11.1 List Countries
+
+Returns all active countries.
+
+**Endpoint**
+```
+GET ?route=mobile/location/countries
+```
+
+**Success Response** `200 OK`
+```json
+{
+  "success": true,
+  "countries": [
+    {
+      "country_id": 223,
+      "name": "United States",
+      "iso_code_2": "US",
+      "iso_code_3": "USA",
+      "postcode_required": true
+    }
+  ]
+}
+```
+
+---
+
+### 11.2 List Zones (States)
+
+Returns all zones/states for a given country.
+
+**Endpoint**
+```
+GET ?route=mobile/location/zones
+```
+
+**Query Parameters**
+| Parameter  | Type    | Required | Description |
+|------------|---------|----------|-------------|
+| country_id | integer | Yes      | Country ID  |
+
+**Success Response** `200 OK`
+```json
+{
+  "success": true,
+  "country_id": 223,
+  "zones": [
+    {
+      "zone_id": 3635,
+      "name": "New York",
+      "code": "NY"
+    }
+  ]
+}
+```
+
+---
+
 ## 10. Error Codes
+
 
 | HTTP Status | Meaning                                  |
 |-------------|------------------------------------------|
@@ -1134,6 +1196,9 @@ All API responses follow this structure:
 | GET    | `mobile/wishlist`                 | Yes  | Get wishlist          |
 | POST   | `mobile/wishlist/add`             | Yes  | Add to wishlist       |
 | POST   | `mobile/wishlist/remove`          | Yes  | Remove from wishlist  |
+| GET    | `mobile/location/countries`        | No   | List countries        |
+| GET    | `mobile/location/zones`            | No   | List zones (states)   |
+
 
 ---
 

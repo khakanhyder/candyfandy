@@ -45,6 +45,10 @@ class Register extends \Opencart\System\Engine\Controller {
 			'custom_field' => [],
 		]);
 
+		// addCustomer ignores the status field and uses the customer group approval setting.
+		// Force active so mobile-registered accounts can log in on the web without admin approval.
+		$this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `status` = '1' WHERE `customer_id` = '" . (int)$customer_id . "'");
+
 		$token = bin2hex(random_bytes(32));
 		$this->db->query("INSERT INTO `" . DB_PREFIX . "mobile_token` SET `customer_id` = '" . (int)$customer_id . "', `token` = '" . $this->db->escape($token) . "', `date_added` = NOW(), `date_expire` = DATE_ADD(NOW(), INTERVAL 30 DAY)");
 
