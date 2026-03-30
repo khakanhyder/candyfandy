@@ -56,8 +56,8 @@ class Order extends \Opencart\System\Engine\Controller {
 
 		$this->load->model('account/order');
 
-		$orders = $this->model_account_order->getOrders($customer_id, $start, $limit);
-		$total  = $this->model_account_order->getTotalOrders($customer_id);
+		$orders = $this->model_account_order->getOrders($start, $limit);
+		$total  = $this->model_account_order->getTotalOrders();
 
 		$items = [];
 		foreach ($orders as $o) {
@@ -94,6 +94,8 @@ class Order extends \Opencart\System\Engine\Controller {
 		if (!isset($this->session->data['customer_token'])) {
 			$this->session->data['customer_token'] = bin2hex(random_bytes(16));
 		}
+
+		$this->registry->set('customer', new \Opencart\System\Library\Cart\Customer($this->registry));
 
 		$order_id = (int)($this->request->get['order_id'] ?? 0);
 
