@@ -113,6 +113,10 @@ class Order extends \Opencart\System\Engine\Controller {
 			return;
 		}
 
+		$this->load->model('localisation/order_status');
+		$status_info = $this->model_localisation_order_status->getOrderStatus($o['order_status_id'] ?? 0);
+		$o['status'] = $status_info['name'] ?? '';
+
 		// Products in order
 		$products_raw = $this->model_account_order->getProducts($order_id);
 		$products = [];
@@ -149,7 +153,7 @@ class Order extends \Opencart\System\Engine\Controller {
 		$history = [];
 		foreach ($history_raw as $h) {
 			$history[] = [
-				'status'     => $h['status'],
+				'status'     => $h['status'] ?? '',
 				'comment'    => $h['comment'],
 				'date_added' => $h['date_added'],
 			];
@@ -159,7 +163,7 @@ class Order extends \Opencart\System\Engine\Controller {
 			'success' => true,
 			'data'    => [
 				'order_id'         => (int)$o['order_id'],
-				'invoice_no'       => $o['invoice_no'],
+				'invoice_no'       => $o['invoice_no'] ? $o['invoice_prefix'] . $o['invoice_no'] : '',
 				'status'           => $o['status'],
 				'date_added'       => $o['date_added'],
 				'payment_method'   => $o['payment_method']['name'] ?? '',
