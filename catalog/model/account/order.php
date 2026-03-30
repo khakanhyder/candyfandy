@@ -112,7 +112,7 @@ class Order extends \Opencart\System\Engine\Model {
 			$limit = 1;
 		}
 
-		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `customer_id` = '" . (int)$this->customer->getId() . "' AND `order_status_id` > '0' AND `store_id` = '" . (int)$this->config->get('config_store_id') . "' ORDER BY `order_id` DESC LIMIT " . (int)$start . "," . (int)$limit);
+		$query = $this->db->query("SELECT o.*, os.`name` AS `status`, (SELECT COUNT(*) FROM `" . DB_PREFIX . "order_product` op WHERE op.`order_id` = o.`order_id`) AS `products` FROM `" . DB_PREFIX . "order` o LEFT JOIN `" . DB_PREFIX . "order_status` os ON (o.`order_status_id` = os.`order_status_id` AND os.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE o.`customer_id` = '" . (int)$this->customer->getId() . "' AND o.`order_status_id` > '0' AND o.`store_id` = '" . (int)$this->config->get('config_store_id') . "' ORDER BY o.`order_id` DESC LIMIT " . (int)$start . "," . (int)$limit);
 
 		return $query->rows;
 	}
