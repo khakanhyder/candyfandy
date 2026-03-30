@@ -30,7 +30,7 @@ class Bestseller extends \Opencart\System\Engine\Controller {
 			'special'      => $special !== null ? (float)$special : null,
 			'tax_class_id' => (int)$p['tax_class_id'],
 			'quantity'     => (int)$p['quantity'],
-			'rating'       => (int)$p['rating'],
+			'rating'       => (int)($p['rating'] ?? 0),
 			'reviews'      => (int)($p['reviews'] ?? 0),
 			'manufacturer' => $p['manufacturer'] ?? '',
 			'date_available' => $p['date_available'],
